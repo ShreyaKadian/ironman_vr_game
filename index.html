@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>IronMan VR</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+</head>
+
+<body>
+    <a-scene>
+        <!-- <a-assets>
+            <a-asset-item id="ironmansuit" src = "source/ee50edc1a92a6147f089249001096af5.glb"></a-asset-item>
+        </a-assets> -->
+        <!-- <a-assets>
+            <a-asset-item id="bottle" src="source/Cola Bottle.glb"></a-asset-item>
+        </a-assets> -->
+        <a-assets>
+            <img id="sky" src="nightsky.jpg">
+        </a-assets>
+
+        <a-assets>
+            <img id="floor" src="floor.jpg">
+        </a-assets>
+
+
+        <a-box color="black" position="0 20 -250" height="70" width="500" depth="1"></a-box> 
+        <a-box color="black" position="0 20 250" height="70" width="500" depth="1"></a-box> 
+        <a-box color="black" position="250 20 0" height="70" width="500" depth="1" rotation="0 90 0"></a-box>
+        <a-box color="black" position="-250 20 0" height="70" width="500" depth="1" rotation="0 90 0"></a-box>
+
+
+        <a-circle color="#575A5E" position="0 0.03 10" rotation="-90 0 0" radius="4"></a-circle>
+        <a-circle color="grey" position="0 0.06 10" rotation="-90 0 0" radius="3"></a-circle>
+        <a-circle color="#575A5E" position="0 0.07 10" rotation="-90 0 0" radius="2"></a-circle>
+
+
+        <a-box color="brown" position="4 0.3 1" height="4" width="0.1" rotation="0 -90 0"></a-box>
+        <a-box color="brown" position="3 0.3 1" height="4" width="0.1" rotation="0 -90 0"></a-box>
+        <a-box color="brown" position="2.5 0.3 1.5" height="4" width="0.1" rotation="0 0 0"></a-box>
+        <a-box color="brown" position="4.5 0.3 1.5" height="4" width="0.1" rotation="0 0 0"></a-box>
+        <a-box color="brown" position="3.5 2.3 1.5" height="2" width="0.1" rotation="0 0 -90"></a-box>
+        <a-box color="brown" position="3.5 0.1 1.5" height="2" width="0.1" rotation="0 0 -90"></a-box>
+        <!-- <a-box color="brown" position="3.5 1 1.5" height="2" width="0.1" rotation="0 0 -90"></a-box> -->
+
+
+        <a-box color="grey" position="0 0.3 0" height="10" width="20" rotation="0 0 0"></a-box>
+        <a-box color="grey" position="10 0.3 10" height="10" width="20" rotation="0 -90 0"></a-box>
+        <a-box color="grey" position="-10 0.3 10" height="10" width="20" rotation="0 -90 0"></a-box>
+        <a-box color="grey" position="0 0.3 20" height="10" width="20" rotation="0 0 0"></a-box>
+
+        <a-text value="Welcome Ironman...Just fly up and SHOOT!" position="-8 4 1" rotation="0 0 0" width="20"
+            color="black">
+        </a-text>
+
+        <a-text value="1.Press both shifts to fly , Release right but keep holding left shift to hover in sky and release both to get down" position="-8 2 1"
+            rotation="0 0 0" width="10" color="black">
+        </a-text>
+
+        <a-text value="2.Mouse click to shoot targets" position="-8 1 1"
+            rotation="0 0 0" width="10" color="black">
+        </a-text>
+
+        <a-text value="Mouse click = Triggerdown" position="-9 3 13"
+            rotation="0 90 0" width="10" color="black">
+        </a-text>
+                <a-text value="Shift = Gripdown" position="-9 2 13"
+            rotation="0 90 0" width="10" color="black">
+        </a-text>
+
+
+
+
+        <!-- <a-entity gltf-model="#ironmansuit" position="10 1.6 0" scale="3 3 3" rotation="0 0 0"></a-entity> -->
+        <!-- <a-entity id="target" gltf-model="#bottle" position="10 1.6 0" scale="1 1 1" rotation="0 0 0"></a-entity> -->
+
+
+        <a-plane src="#floor" position="0 0 0" rotation="-90 0 0" width="500" height="500"></a-plane>
+        <a-sky src="#sky"></a-sky>
+
+<a-entity id="positionhelper" position="3 0 15">
+  <a-camera id="ironman">
+    <a-cursor color="white"></a-cursor>
+    <a-text id="scoreText" value="Score: 0" position="0 -0.5 -1.5" width="2" color="white"></a-text>
+  </a-camera>
+</a-entity>
+
+        <a-entity id="leftHand" hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+        <a-entity id="rightHand" hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+    </a-scene>
+
+
+    <script>
+        let score = 0;
+        let leftActive = false;
+        let rightActive = false;
+        const ironman = document.getElementById('ironman');
+
+        const scene = document.querySelector('a-scene');
+        const numTargets = 200;
+
+        for (let i = 0; i < numTargets; i++) {
+            const x = Math.random() * 500 - 250
+            let y = Math.random() * 75 + 5;
+            const z = Math.random() * 200 - 100;
+
+            if (y < 100) {
+                y = y + 100
+            }
+
+            const target = document.createElement('a-circle');
+            target.setAttribute('class', 'target');
+            target.setAttribute('radius', '2');
+            target.setAttribute('color', 'red');
+            target.setAttribute('position', `${x} ${y} ${z}`);
+            target.setAttribute('rotation', '0 0 0');
+            scene.appendChild(target);
+        }
+
+
+
+        function fly_me_to_the_moon() {
+            const pos = ironman.getAttribute('position');
+            if (leftActive && rightActive) {
+                ironman.setAttribute('position', {
+                    x: pos.x,
+                    y: pos.y + 0.5,
+                    z: pos.z
+                });
+            } else if (leftActive && !rightActive) {
+            }
+
+            else if (!leftActive && !rightActive) {
+                let newY;
+                if (pos.y > 1.6) {
+                    newY = pos.y - 1;
+                } else {
+                    newY = 1.6;
+                }
+
+                ironman.setAttribute('position', {
+                    x: pos.x,
+                    y: newY,
+                    z: pos.z
+                });
+            }
+            requestAnimationFrame(fly_me_to_the_moon);
+        }
+
+        requestAnimationFrame(fly_me_to_the_moon);
+
+        const leftHand = document.getElementById('leftHand');
+        const rightHand = document.getElementById('rightHand');
+
+        leftHand.addEventListener('gripdown', () => {
+            leftActive = true;
+        });
+        leftHand.addEventListener('gripup', () => {
+            leftActive = false;
+        });
+
+        rightHand.addEventListener('gripdown', () => {
+            rightActive = true;
+        });
+        rightHand.addEventListener('gripup', () => {
+            rightActive = false;
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ShiftLeft') {
+                leftActive = true;
+            }
+            if (e.code === 'ShiftRight') {
+                rightActive = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ShiftLeft') {
+                leftActive = false;
+            }
+            if (e.code === 'ShiftRight') {
+                rightActive = false;
+            }
+        });
+
+        function pew_pew() {
+            const scene = document.querySelector('a-scene');
+            const get = document.querySelector('#ironman');
+
+            const cam_obj = get.getObject3D('camera');
+            if (!cam_obj) return;
+
+            const origin = new THREE.Vector3();
+            const direction = new THREE.Vector3();
+            cam_obj.getWorldPosition(origin);
+            cam_obj.getWorldDirection(direction);
+            direction.normalize();
+
+            const bullet = document.createElement('a-sphere');
+            bullet.setAttribute('radius', '0.05');
+            bullet.setAttribute('color', 'yellow');
+            bullet.setAttribute('position', `${origin.x} ${origin.y} ${origin.z}`);
+            scene.appendChild(bullet);
+
+            const speed = 1;
+            const bulletPos = origin.clone();
+            const bulletDir = direction.clone();
+
+            const interval = setInterval(() => {
+                bulletPos.add(bulletDir.clone().multiplyScalar(speed));
+                bullet.setAttribute('position', `${bulletPos.x} ${bulletPos.y} ${bulletPos.z}`);
+
+                const targets = document.querySelectorAll('.target');
+                for (const target of targets) {
+                    const tPos = target.getAttribute('position');
+                    const dx = bulletPos.x - tPos.x;
+                    const dy = bulletPos.y - tPos.y;
+                    const dz = bulletPos.z - tPos.z;
+                    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                    if (dist < 1 && target.getAttribute('visible') !== 'false') {
+                        target.setAttribute('visible', 'false');
+                        bullet.remove();
+                        clearInterval(interval);
+                        score += 100;
+                        document.getElementById("scoreText").setAttribute("value", `Score: ${score}`);
+                        return;
+                    }
+                }
+
+                if (Math.abs(bulletPos.x) > 1000 || Math.abs(bulletPos.y) > 1000 || Math.abs(bulletPos.z) > 1000) {
+                    bullet.remove();
+                    clearInterval(interval);
+                }
+            }, 5);
+        }
+        window.addEventListener('click', pew_pew);
+        rightHand.addEventListener('triggerdown', pew_pew);
+
+    </script>
+</body>
+
+</html>
